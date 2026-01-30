@@ -1,0 +1,105 @@
+name: FormationGateTraversal
+
+defaults:
+  # see https://hydra.cc/docs/advanced/overriding_packages/
+  - /base/env_base@_here_
+  - /base/sim_base@_here_
+  # - /base/randomization_base@_here_
+
+env:
+  num_envs: 1024
+  max_episode_length: 100
+
+
+eval: False
+# eval: True
+
+drone_model:
+  # name: Hummingbird
+  name: Crazyflie
+  # controller: RateController  # No low-level controller, direct motor control
+  controller: RateController
+  # controller: null
+  
+  # Simulation Mode Configuration
+  # - "physics": Use Isaac Sim PhysX engine (high fidelity, slower)
+  # - "kinematic": Use mathematical dynamics model (fast, deterministic)
+  sim_mode: "kinematic"  # Options: "physics" or "kinematic"
+
+
+# Task-specific parameters
+time_encoding: False
+formation_tolerance: 3.0
+gate_count: 1  # Policy Search MPC的门数量参数
+gate_spacing: 8.0
+gate_init_thetas: -1.0 # Initial angle of the pendulum gate [degrees]
+# Gate dimensions (separate width and height for rectangular gates)
+gate_width: 0.4   # Width of the gate (Y direction)
+gate_height: 0.2  # Height of the gate (Z direction)
+# Backward compatibility: if gate_width/gate_height not defined, falls back to gate_size
+gate_size: 1.0    # Fallback for square gatesr gates
+gate_movement_speed: 0.001  # Legacy parameter, now used for initial pendulum velocity randomization
+start_x: -3.0
+
+# Pendulum Gate Physics Parameters (based on Pendulum_v1)
+pendulum_length: 2.0    # Length of pendulum arm [meters]
+pendulum_damping: 0.1   # Damping coefficient
+pendulum_mass: 2.0      # Mass of gate [kg]
+pendulum_gravity: 9.81  # Gravity acceleration [m/s²]
+
+# Direct Learning Configuration (No Curriculum)
+direct_learning:
+  enable: false
+
+# Curriculum Learning Configuration
+curriculum_learning:
+  enable: false
+  # Frame ratios for three stages (must sum to 1.0)
+  stage_ratios: [0.18, 0.3, 0.52]  # Stage 1: 30%, Stage 2: 30%, Stage 3: 40%
+  # Stage 1: Fly to endpoint smoothly
+  # Stage 2: Formation flying to endpoint
+  # Stage 3: Formation flying through dynamic gates to endpoint
+  
+  # Smooth transition settings
+  enable_smooth_transition: true  # Enable smooth reward transition between stages
+  transition_frames: 5000000      # Number of frames for smooth transition (10M frames, ~152k steps)
+
+# Reward weights (only parameters actually used in the code)
+# 策略：使用 Laplacian 编队奖励 + 尺度控制 + 分离度惩罚 (参考 FormationUnified)
+formation_reward_weight: 20.0           # 编队Laplacian形状奖励 (主要)
+formation_size_reward_weight: 10.0      # 编队尺度奖励 (辅助，确保大小符合预期)
+separation_penalty_weight: 200.0         # 编队分离度惩罚 (避免碰撞)
+formation_cohesion_weight: 0.0         # 废弃：原有的 cohesion 现在由 size + separation 替代
+safe_distance: 0.3                    # 最小安全距离 [meters]
+
+gate_progress_reward_weight: 10.0               # 门穿越相关奖励 (大幅提高！)
+gate_traversal_reward_weight: 1000.0               # 门穿越相关奖励 (大幅提高！),最开始最好的效果是200
+collision_penalty_weight: 0.0          # 碰撞惩罚 (提高，鼓励安全穿越)
+endpoint_progress_reward_weight: 10.0  # 终点进度奖励 (提高，引导穿门)
+uprightness_reward_weight: 0.0         # 机身姿态保持奖励 (降低)
+
+# 动作平滑性奖励组件 (参考 FormationUnified 的完整实现)
+reward_effort_weight: 0.0              # 油门使用量惩罚
+reward_throttle_smoothness_weight: 5.0 # 加速度平滑性奖励
+reward_action_smoothness_weight: 0.0   # 动作一致性奖励 (降低，允许更激进动作)
+spin_reward_coeff: 6.0                 # 偏航旋转惩罚
+heading_reward_weight: 10.0              # 朝向一致性奖励
+
+# Formation configuration
+# formation: tight_3  # Options: tight, wide, v_shape, tight_3, v_shape_3
+formation: v_shape_3
+formation_scale: 0.25  # Scale factor for formation tightness (0.5 = half distance, 2.0 = double distance)
+# 或者直接指定自定义编队（例如3架无人机）：
+# formation: [[0, 0, 0], [1.5, 0, 0], [-1.5, 0, 0]]
+
+# Policy Search for MPC specific parameters
+policy_search_mpc:
+  num_gates: 1                  # 门的数量
+  gate_traversal_time_range: [0.5, 3.0]  # 门穿越时间范围
+  gate_follow_weight_range: [1.0, 10.0]  # 门跟随权重范围
+  formation_weight_range: [1.0, 10.0]    # 编队权重范围
+
+ravel_obs: true
+ravel_obs_central: true
+
+action_transform: null

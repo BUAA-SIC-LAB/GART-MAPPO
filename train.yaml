@@ -1,0 +1,39 @@
+# hydra.job.chdir: false
+hydra:
+  searchpath:
+    # see https://hydra.cc/docs/advanced/search_path/
+    - file://../cfg
+
+headless: false
+
+sim: ${task.sim}
+env: ${task.env}
+
+# total_frames: 60_000_000
+total_frames: 550_000_000
+max_iters: -1
+eval_interval: -1
+save_interval: 100
+seed: 0
+
+viewer:
+  resolution: [960, 720]
+  eye: [10, 0., 8.]
+  lookat: [0., 0., 1.]
+
+wandb:
+  group: ${oc.select:..task.name}
+  run_name: ${oc.select:..task.name,test}-${oc.select:..algo.name,none}
+  job_type: train
+  entity:
+  project: rmappo
+  # mode: online # set to 'disabled' when debugging locally
+  mode: disabled
+  run_id:
+  monitor_gym: True
+  tags:
+
+defaults:
+  - task: FormationGateTraversal
+  - algo: mappo_graph_attention
+  - _self_

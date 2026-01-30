@@ -1,0 +1,63 @@
+name: mappo_graph
+
+# PPO settings
+train_every: 64
+seq_len: 16 # ##### CHANGED #####: 添加这个参数！(8, 16, 32 都是合理的值)
+num_minibatches: 16
+ppo_epochs: 4
+clip_param: 0.3  # ✅ 稍微放宽 clip (0.2 -> 0.25)，允许更大的策略更新
+entropy_coef: 0.001  # ✅ 提高到 0.01 (原来 0.001)，增加探索
+policy_loss_weight: 0.1  # Weight for policy loss
+value_loss_weight: 1.0   # Weight for value loss
+gae_lambda: 0.95
+gamma: 0.995
+max_grad_norm: 1.0  # ✅ 减小梯度裁剪阈值 (5.0 -> 1.0)，防止梯度爆炸，增加训练稳定性
+normalize_advantages: True
+share_actor: false
+
+# Value normalization options:
+# Option 1: Use PopArt (adaptive normalization with weight rescaling)
+use_popart: False  # Set to true to enable PopArt normalization
+popart_beta: 0.995  # EMA decay rate for PopArt (0.995 or 0.9995 recommended)
+
+# Option 2: Use custom value_norm (alternative to PopArt)
+value_norm:
+  class: "ValueNorm1"  # Can be "ValueNorm1", "ValueNorm2", or "PopArt"
+  kwargs:
+    beta: 0.998  # Only for ValueNorm1 or PopArt
+
+# Default: If both use_popart and value_norm are not specified, ValueNorm1 with beta=0.995 is used
+
+# Shared encoder hyperparameters
+model:
+  embed_dim: 128           # 保持不变
+  gnn_heads: 4             # 保持不变
+  gnn_layers: 2            # ✅ 增加到 2 层（1 -> 2），增强多智能体交互建模
+  gnn_dropout: 0.0         
+  task_heads: 4            # 保持不变
+  fusion_hidden_dim: 256   # 保持不变
+  gru_hidden_dim: 256      # 保持不变
+  post_mlp_units: [256, 128]     # 保持不变
+  
+  # Ablation flags (set to false to disable specific components)
+  use_graph: True
+  use_task_attn: True
+  use_gru: True
+
+  actor_head_units: [64]  # ✅ 加深 Actor（增加一层 256）
+  critic_head_units: [512, 256, 128]  # ✅ 简化 Critic（太深可能不稳定）
+  encoder_lr: 0.0001       # 保持不变
+
+actor:
+  lr: 0.0001  # ✅ 提高学习率 (0.0005 -> 0.001)，加快学习门穿越
+  lr_scheduler:
+  lr_scheduler_kwargs:
+  weight_decay: 0.0
+
+critic:
+  lr: 0.0001  # ✅ 提高学习率 (0.0005 -> 0.001)，更快适应新策略
+  lr_scheduler:
+  lr_scheduler_kwargs:
+  weight_decay: 0.0
+  huber_delta: 10.0
+
