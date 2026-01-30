@@ -2,7 +2,7 @@
 hydra:
   searchpath:
     # see https://hydra.cc/docs/advanced/search_path/
-    - file://../cfg
+    - file://cfg
 
 headless: false
 

@@ -34,7 +34,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import Any, cast
 from tensordict import TensorDict, TensorDictBase
-from tensordict.nn import TensorDictModule
+from tensordict.nn import TensorDictModule, TensorDictModuleBase, make_functional, TensorDictParams
 from torchrl.data import CompositeSpec, TensorSpec
 from torchrl.modules import ProbabilisticActor
 from .modules.distributions import IndependentNormal
@@ -45,7 +45,7 @@ from .modules.graph_recurrent_attention import (
 from .ppo.common import GAE, make_mlp1, make_mlp
 from .utils import valuenorm
 from .utils.valuenorm import ValueNorm1
-from torch._functorch.apis import vmap
+from torch.func import vmap
 from einops.layers.torch import Rearrange
 
 class Actor(nn.Module):
@@ -69,10 +69,10 @@ class Actor(nn.Module):
         return loc, scale
 
 
-class EnsembleModule(_EnsembleModule):
+class EnsembleModule(nn.Module):
 
     def __init__(self, module: TensorDictModuleBase, num_copies: int):
-        super(_EnsembleModule, self).__init__()
+        super(EnsembleModule, self).__init__()
         self.in_keys = module.in_keys
         self.out_keys = module.out_keys
         self.num_copies = num_copies

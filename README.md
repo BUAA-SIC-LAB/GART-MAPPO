@@ -4,6 +4,8 @@ This project implements a Multi-Agent Reinforcement Learning (MARL) solution for
 
 The core contribution is the **GRAT-MAPPO** (Graph Recurrent Attention Network - Multi-Agent Proximal Policy Optimization) algorithm, designed to enable robust formation control and coordinated maneuver through complex environments.
 
+> **Note**: The project code is currently being organized and will be gradually improved. There may be runtime errors, please fix them yourself.
+
 ## Overview
 
 - **Framework**: Omnidrones (PyTorch + Isaac Sim)

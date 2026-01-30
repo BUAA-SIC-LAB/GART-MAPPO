@@ -49,7 +49,7 @@ def main(cfg):
 
     run = init_wandb(cfg)
     simulation_app = init_simulation_app(cfg)
-    run = init_wandb(cfg)
+    # run = init_wandb(cfg)
     setproctitle(run.name)
     print(OmegaConf.to_yaml(cfg))
 
