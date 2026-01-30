@@ -1,5 +1,3 @@
-# GRAT-MAPPO Project
-
 This project implements a Multi-Agent Reinforcement Learning (MARL) solution for drone formation control and gate traversal tasks. It is built upon the [Omnidrones](https://github.com/btx0424/omnidrones) framework, leveraging NVIDIA Isaac Sim for high-fidelity physics simulation.
 
 The core contribution is the **GRAT-MAPPO** (Graph Recurrent Attention Network - Multi-Agent Proximal Policy Optimization) algorithm, designed to enable robust formation control and coordinated maneuver through complex environments.
